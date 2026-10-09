@@ -53,9 +53,9 @@ function Home(){const{t,l}=useL()
   <section className="wrap sec"><Head title={t('atmos')}/><div className="gal">{gallery.slice(0,3).map(g=><Img key={g.en} src={g.src} alt={g[l]}/>)}</div><Link className="btn ghost" to="/gallery">{t('gallery')}</Link></section>
   <section className="olive"><div className="wrap sec"><h2>{t('visit')}</h2><p>{brand.address[l]}</p><Actions/></div></section></>}
 
-function Menu(){const{l}=useL();const[c,setC]=useState('all');const{hash}=useLocation()
+function Menu(){const{l,t}=useL();const[c,setC]=useState('all');const{hash}=useLocation()
   useEffect(()=>{const h=hash.slice(1);if(menu.categories.some(x=>x.id===h))setC(h)},[hash])
-  return <div className="wrap sec"><nav className="tabs" aria-label="Categories">{[{id:'all',ar:'الكل',en:'All'},...menu.categories].map(x=>
+  return <div className="wrap sec"><h1 className="sr">{t('st_menu')}</h1><nav className="tabs" aria-label="Categories">{[{id:'all',ar:'الكل',en:'All'},...menu.categories].map(x=>
     <button key={x.id} className={c===x.id?'on':''} onClick={()=>setC(x.id)}>{x[l]}</button>)}</nav>
     {menu.categories.filter(x=>c==='all'||x.id===c).map(x=><section key={x.id} id={x.id} className="rise"><Head title={x[l]}/>
       <ul className="list">{menu.items.filter(i=>i.category===x.id).map(i=><Item key={i.id} i={i}/>)}</ul></section>)}</div>}
@@ -74,11 +74,24 @@ function Contact(){const{t,l}=useL();return <div className="wrap sec narrow"><h1
   <h3>{t('hours')}</h3><Hours/><p className="note">{t('note')}</p><Actions/></div>}
 function NotFound(){const{t}=useL();return <div className="wrap sec narrow"><h1 className="big">404</h1><p>{t('nf')}</p><Link className="btn" to="/">{t('back')}</Link></div>}
 
+function meta(sel:string,attr:string,key:string,val:string){let e=document.head.querySelector(sel) as HTMLMetaElement;if(!e){e=document.createElement('meta');e.setAttribute(attr,key);document.head.appendChild(e)}e.content=val}
+function SEO(){const{t,l}=useL();const p=useLocation().pathname
+  const k=({'/':'home','/menu':'menu','/about':'about','/gallery':'gallery','/contact':'contact'} as Record<string,string>)[p]
+  useEffect(()=>{const title=k?t('st_'+k):t('nf')+' | '+brand.name[l];const d=t('sd_'+(k||'home'))
+    document.title=title;meta('meta[name=description]','name','description',d);meta('meta[property="og:title"]','property','og:title',title)
+    meta('meta[property="og:description"]','property','og:description',d);meta('meta[property="og:locale"]','property','og:locale',l==='ar'?'ar_JO':'en_US')
+    meta('meta[name=robots]','name','robots',k?'index,follow':'noindex')},[p,l])
+  return null}
+function Schema(){useEffect(()=>{const e=document.createElement('script');e.type='application/ld+json'
+  e.text=JSON.stringify({'@context':'https://schema.org','@type':'CafeOrCoffeeShop',name:brand.name.ar,alternateName:brand.name.en,telephone:brand.tel,priceRange:'1.00-6.00 JOD',
+    address:{'@type':'PostalAddress',streetAddress:brand.street,addressLocality:'Amman',addressCountry:'JO'},servesCuisine:['Coffee','Tea','Sandwiches'],
+    openingHoursSpecification:hours.map(d=>{const[o,c]=d.h.split('–');return{'@type':'OpeningHoursSpecification',dayOfWeek:d.en,opens:o,closes:c}}),sameAs:brand.instagram?[brand.instagram]:undefined})
+  document.head.appendChild(e);return()=>{e.remove()}},[]);return null}
+
 export default function App(){
   const[l,setL]=useState<L>((localStorage.getItem('lang') as L)||'ar')
-  useEffect(()=>{document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';localStorage.setItem('lang',l)
-    document.title=brand.name[l==='ar'?'ar':'en']+' | '+(l==='ar'?'Eliaa Hut':'كوخ إيلياء')},[l])
+  useEffect(()=>{document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';localStorage.setItem('lang',l)},[l])
   const t=(k:string)=>(tr[l] as Record<string,string>)[k]||k
-  return <Ctx.Provider value={{l,setL,t}}><BrowserRouter><Navbar/><main><Routes>
+  return <Ctx.Provider value={{l,setL,t}}><BrowserRouter><SEO/><Schema/><Navbar/><main><Routes>
     <Route path="/" element={<Home/>}/><Route path="/menu" element={<Menu/>}/><Route path="/about" element={<About/>}/>
     <Route path="/gallery" element={<Gallery/>}/><Route path="/contact" element={<Contact/>}/><Route path="*" element={<NotFound/>}/></Routes></main><Footer/></BrowserRouter></Ctx.Provider>}

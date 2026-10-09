@@ -30,3 +30,4 @@ a{color:inherit}ul{list-style:none;padding:0}button{font:inherit;cursor:pointer}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media(max-width:760px){.split{grid-template-columns:1fr;padding-block:28px}.heroimg{aspect-ratio:16/10;border-radius:16px}.burger{display:block}
 .nav nav{display:none;position:absolute;top:64px;inset-inline:0;background:var(--off);flex-direction:column;padding:20px;gap:14px;border-bottom:1px solid var(--cream)}.nav nav.open{display:flex}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
